@@ -107,7 +107,7 @@ def transaction():
             withdrawal = int(input('Enter amount to withdraw: '))
             print(f'Your new balance is {client.withdraw(withdrawal)}')
             client.update()
-            if client.exit() == 'n':
+            if client.exit():
                 break
 
         # check balance
