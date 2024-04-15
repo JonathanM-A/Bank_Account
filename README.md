@@ -45,80 +45,98 @@ class BankAccount:
         elif i == 'y':
             return False
 
-def open_account():
-    name = input('Please enter your name: ')
-    pin = input('Create a PIN (4 digits): ')
-    if len(pin) != 4:
-        pin = input('Your PIN must have 4 digits. Try again: ')
-    balance = int(input('How much will your initial deposit be: '))
 
-    with open('bank_clients.csv', 'a') as file:
-        writer(file).writerow([name.lower(), pin, balance])
+def bank():
+    def open_account():
+        name = input('Please enter your name: ')
+        pin = input('Create a PIN (4 digits): ')
+        if len(pin) != 4:
+            pin = input('Your PIN must have 4 digits. Try again: ')
+        balance = int(input('How much will your initial deposit be: '))
 
-    print(f'Welcome {name}, to KAMAJ Bank')
+        with open('bank_clients.csv', 'a') as file:
+            writer(file).writerow([name.lower(), pin, balance])
 
+        print(f'Welcome {name}, to KAMAJ Bank')
 
-def transaction():
-    tries = 3
-    message = 'SELECT TRANSACTION (Enter number)\n\
-                1. Deposit\n\
-                2. Withdrawal\n\
-                3. Check balance\n\
-                4. Cancel transaction\n'
+    def transaction():
+        tries = 3
+        message = 'SELECT TRANSACTION (Enter number)\n\
+                    1. Deposit\n\
+                    2. Withdrawal\n\
+                    3. Check balance\n\
+                    4. Cancel transaction\n'
 
-    with open('bank_clients.csv') as file:
-        client_list = list(reader(file))
-    
-    name = input('Please enter your name: ').lower()
-    pin = input('Please enter your PIN: ')
-    balance = int(''.join([c for [a, b, c] in client_list if a == name and b == pin]))
+        with open('bank_clients.csv') as file:
+            client_list = list(reader(file))
 
-    client_id = [[a, b] for [a, b, c] in client_list if a == name and b == pin]
-    while [name, pin] not in client_id:
-        tries -= 1
-        if tries > 0:
-            print(f'Invalid PIN. You have {tries} attempts remaining')
-            name = input('Please enter your name: ')
-            pin = input('Please enter your PIN: ')
-            client_id = [[a, b]
-                         for [a, b, c] in client_list if a == name and b == pin]
+        name = input('Please enter your name: ').lower()
+        pin = input('Please enter your PIN: ')
+        balance = int(
+            ''.join([c for [a, b, c] in client_list if a == name and b == pin]))
+
+        client_id = [[a, b] for [a, b, c] in client_list if a == name and b == pin]
+        while [name, pin] not in client_id:
+            tries -= 1
+            if tries > 0:
+                print(f'Invalid PIN. You have {tries} attempts remaining')
+                name = input('Please enter your name: ')
+                pin = input('Please enter your PIN: ')
+                client_id = [[a, b]
+                            for [a, b, c] in client_list if a == name and b == pin]
+            else:
+                return print('Your account has been blocked.')
+        print(f'Welcome {name.title()}')
+
+        client = BankAccount(name, pin, balance)    # Creating class instance
+
+        while True:
+            action = int(input(message))
+            while action not in range(1, 5):
+                print('Please try again')
+                action = input(message)
+
+            # make a deposit
+            if action == 1:
+                deposit = int(input('Enter amount to deposit: '))
+                print(f'Your new balance is {client.deposit(deposit)}')
+                client.update()
+                if client.exit():
+                    break
+
+            # make a withdrawal
+            elif action == 2:
+                withdrawal = int(input('Enter amount to withdraw: '))
+                print(f'Your new balance is {client.withdraw(withdrawal)}')
+                client.update()
+                if client.exit() == 'n':
+                    break
+
+            # check balance
+            elif action == 3:
+                print(client.check_balance())
+                if client.exit():
+                    break
+
+            # cancel transaction
+            elif action == 4:
+                if client.exit():
+                    break
+    task = input('Welcome to KAMAJ Bank\n\
+                 1. Open an account\n\
+                 2. Perform a transaction\n\
+                 (Enter number)\n')
+    while task:
+        if task == '1':
+            return open_account()
+        elif task == '2':
+            return transaction()
         else:
-            return print('Your account has been blocked.')
-    print(f'Welcome {name.title()}')
+            task = input('Please try again\n\
+                         1. Open an account\n\
+                         2. Perform a transaction\n\
+                         (Enter number)\n')
 
-    client = BankAccount(name, pin, balance)    # Creating class instance
-
-    while True:
-        action = int(input(message))
-        while action not in range(1, 5):
-            print('Please try again')
-            action = input(message)
-
-        # make a deposit
-        if action == 1:
-            deposit = int(input('Enter amount to deposit: '))
-            print(f'Your new balance is {client.deposit(deposit)}')
-            client.update()
-            if client.exit():
-                break
-
-        # make a withdrawal
-        elif action == 2:
-            withdrawal = int(input('Enter amount to withdraw: '))
-            print(f'Your new balance is {client.withdraw(withdrawal)}')
-            client.update()
-            if client.exit():
-                break
-
-        # check balance
-        elif action == 3:
-            print(client.check_balance())
-            if client.exit():
-                break
-
-        # cancel transaction
-        elif action == 4:
-            if client.exit():
-                break
+bank()
 ```
 '''
